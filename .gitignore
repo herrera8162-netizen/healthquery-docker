@@ -40,8 +40,19 @@ Thumbs.db
 *.swp
 *.swo
 
-# Claude / agent-local scratch
+# AI-agent instructions, state, and local scratch. These may contain project
+# context, handoffs, credential references, or machine-specific state.
+.nosync
 .claude/
+.codex/
+.local tooling/
+.agents/
+.agent/
+.aider*
+.cursor/
+.continue/
+.copilot/
+.windsurf/
 private/
 scratch/
 temp/
@@ -49,6 +60,11 @@ plan.md
 roadmap.md
 fixes.md
 
-# Agent Core / workspace notes
+# AI-agent workspace notes
 AGENTS.md
 CLAUDE.md
+CODEX.md
+GEMINI.md
+HANDOFF.md
+MEMORY.md
+*.local tooling
