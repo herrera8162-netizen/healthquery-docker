@@ -68,3 +68,7 @@ GEMINI.md
 HANDOFF.md
 MEMORY.md
 *.local tooling
+
+# local tooling-side consumers; retained locally until moved to their own project.
+local_sidecar/
+local_sidecar_anomaly/
