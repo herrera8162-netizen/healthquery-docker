@@ -2,6 +2,7 @@
 
 # Local deployment files
 docker-compose.yml
+docker-compose.single.yml
 .env
 .env.local
 .env.*.local

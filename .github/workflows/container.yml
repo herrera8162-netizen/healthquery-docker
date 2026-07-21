@@ -14,11 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate deployment manifests
-        run: |
-          docker compose -f docker-compose.example.yml config
-          docker compose -f docker-compose.single.example.yml config
+        run: docker compose -f docker-compose.example.yml config
       - name: Build the single-container image
-        run: docker build --tag healthquery:ci .
+        run: docker build --build-arg VITE_READ_TOKEN=ci-read-token --tag healthquery:ci .
       - name: Smoke test dashboard and API
         run: |
           docker run --detach --rm --name healthquery-ci --publish 8000:8000 \
@@ -31,3 +29,5 @@ jobs:
             sleep 1
           done
           curl --fail --silent http://127.0.0.1:8000/ | grep -q "HealthQuery"
+          curl --fail --silent --header 'Authorization: Bearer ci-read-token' \
+            http://127.0.0.1:8000/api/health/overview >/dev/null

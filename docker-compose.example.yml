@@ -1,12 +1,15 @@
 services:
-  healthquery-api:
+  healthquery:
     build:
       context: .
-      dockerfile: backend/Dockerfile
-    container_name: healthquery-api
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /api
+        VITE_READ_TOKEN: change-me-read
+    container_name: healthquery
     restart: unless-stopped
-    expose:
-      - "3136"
+    ports:
+      - "127.0.0.1:3135:8000"
     volumes:
       - /srv/docker-data/healthquery:/app/data
     environment:
@@ -22,15 +25,3 @@ services:
       HEALTHQUERY_LLM_MODEL: ""
       HEALTHQUERY_LLM_API_KEY: ""
       HEALTHQUERY_LLM_TIMEOUT_SECONDS: "60"
-
-  healthquery:
-    build:
-      context: ./frontend
-      args:
-        VITE_API_BASE_URL: /api
-    container_name: healthquery
-    restart: unless-stopped
-    depends_on:
-      - healthquery-api
-    ports:
-      - "3135:8080"

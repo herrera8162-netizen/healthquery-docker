@@ -8,8 +8,8 @@ reporters, MCP server, tests) can stay small.
 Design notes
 ------------
 
-* ``HEALTHQUERY_BASE_URL`` defaults to ``http://healthquery-api:3136``
-  because that is the in-cluster DNS name + port the trusted integration and
+* ``HEALTHQUERY_BASE_URL`` defaults to ``http://healthquery:8000``
+  because that is the in-cluster DNS name + port the single-container and
   other Docker Compose services should use. Operators running the client
   outside the compose network can override the env var, or pass
   ``base_url`` explicitly.
@@ -42,7 +42,7 @@ from .exceptions import (
 )
 from .models import ConfigResponse, HealthQueryResult, HealthStatus
 
-DEFAULT_BASE_URL = "http://healthquery-api:3136"
+DEFAULT_BASE_URL = "http://healthquery:8000"
 DEFAULT_TIMEOUT_SECONDS = 30.0
 DEFAULT_MAX_RETRIES = 3
 DEFAULT_RETRY_BACKOFF_SECONDS = 0.5

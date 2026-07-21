@@ -8,7 +8,7 @@ from fastmcp import FastMCP
 
 # Make the in-tree ``healthquery_client`` package importable when this MCP
 # server runs as a subprocess from a checkout. In the api container image
-# the package is installed via pip (see backend/Dockerfile), so the sys.path
+# the package is installed via pip in the production image (see Dockerfile), so the sys.path
 # bootstrap is a no-op there.
 _PACKAGE_PARENT = Path(__file__).resolve().parent.parent
 if str(_PACKAGE_PARENT) not in sys.path:

@@ -100,7 +100,7 @@ client = HealthQueryClient(transport=mock_transport)
 
 | Env var | Default | Purpose |
 | --- | --- | --- |
-| `HEALTHQUERY_BASE_URL` | `http://healthquery-api:3136` | Base URL of the api container. Override for out-of-cluster callers. |
+| `HEALTHQUERY_BASE_URL` | `http://healthquery:8000` | Base URL of the single HealthQuery container on the Docker network. Override for out-of-cluster callers. |
 | `HEALTHQUERY_READ_TOKEN` | _(required)_ | Bearer token for the read API. |
 
 If the token is missing at construction time, the client raises

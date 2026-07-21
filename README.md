@@ -51,28 +51,14 @@ HEALTHQUERY_READ_TOKEN:   your-read-token-here      # the dashboard uses this
 
 Keep these separate. The ingest token only permits writing health data. The read token only permits reading it.
 
-### 3. Start the containers
+### 3. Start HealthQuery
 
 ```bash
 docker compose up -d
 ```
 
-The dashboard is now running on port `3135`.
-
-### Single-container alternative
-
-For a simpler installation, the API can serve the built dashboard itself. This
-keeps the existing two-container Compose setup as the default while providing a
-single image and port for small self-hosted deployments:
-
-```bash
-cp docker-compose.single.example.yml docker-compose.single.yml
-# Set real tokens in docker-compose.single.yml, then:
-docker compose -f docker-compose.single.yml up -d
-```
-
-It also listens on port `3135`; configure the companion webhook as
-`https://your-server/api/webhook/health` as usual.
+One container now serves both the dashboard and API on `127.0.0.1:3135`.
+Configure the companion webhook as `https://your-server/api/webhook/health`.
 
 ### 4. Set up a reverse proxy (recommended)
 
@@ -180,7 +166,7 @@ For Claude Desktop, add to your `claude_desktop_config.json`:
 
 ## Environment variables
 
-All variables go in `docker-compose.yml` under `healthquery-api` → `environment`.
+All variables go in `docker-compose.yml` under `healthquery` → `environment`.
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
@@ -195,12 +181,12 @@ All variables go in `docker-compose.yml` under `healthquery-api` → `environmen
 | `HEALTHQUERY_CORS_ORIGINS` | No | `*` | Comma-separated allowed CORS origins (e.g. `https://health.example.com`) |
 | `DB_PATH` | No | `/app/data/healthquery.db` | SQLite database path inside the container |
 
-The frontend build also takes two build args:
+The frontend build takes two build args:
 
 | Arg | Default | Description |
 |-----|---------|-------------|
-| `VITE_API_BASE_URL` | `/api` | API base path (change if not using the built-in nginx proxy) |
-| `VITE_READ_TOKEN` | `read-token` | Development-only frontend token; never pass a production token at build time because Vite embeds it in public JavaScript |
+| `VITE_API_BASE_URL` | `/api` | API base path (normally leave unchanged) |
+| `VITE_READ_TOKEN` | `read-token` | Read token used by the dashboard. It is visible to anyone who can load the dashboard, so deploy behind a private network or authenticated reverse proxy. |
 
 ---
 
@@ -210,7 +196,7 @@ The frontend build also takes two build args:
 
 **Frontend:** React 19, TypeScript, Vite, Tailwind CSS, Recharts
 
-**Infrastructure:** Docker, nginx (serves frontend + proxies `/api/` to backend)
+**Infrastructure:** Docker multi-stage build; FastAPI serves the compiled frontend and API from one container
 
 ---
 
