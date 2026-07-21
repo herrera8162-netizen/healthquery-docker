@@ -85,7 +85,7 @@ async def test_status_endpoint_returns_counts_with_auth():
 @pytest.mark.asyncio
 async def test_schema_version_and_metric_points_table_exist():
     await init_db()
-    assert (await fetch_one("SELECT schema_version FROM schema_meta WHERE id = 1"))["schema_version"] == 2
+    assert (await fetch_one("SELECT schema_version FROM schema_meta WHERE id = 1"))["schema_version"] == 4
     assert await fetch_one("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'metric_points'") is not None
 
 
@@ -264,6 +264,15 @@ async def test_seed_sample_health_data_helper():
 @pytest.mark.asyncio
 async def test_read_views_and_sql_query_are_available_after_ingest():
     await seed_sample_health_data()
+    batch = await fetch_one("SELECT batch_id FROM ingest_batches ORDER BY received_at DESC LIMIT 1")
+    assert batch is not None
+    await execute(
+        """
+        INSERT INTO metric_points (record_key, batch_id, source, metric_type, recorded_at, numeric_value, unit, raw_json)
+        VALUES (?, ?, 'test', 'heart_rate', datetime('now'), 60, 'bpm', '{}')
+        """,
+        ("test:recent-heart-rate", batch["batch_id"]),
+    )
     transport = ASGITransport(app=app)
     headers = {"Authorization": "Bearer read-token"}
     async with httpx.AsyncClient(transport=transport, base_url="http://test", headers=headers) as client:
@@ -330,7 +339,7 @@ async def test_sql_query_endpoint_enforces_row_and_byte_limits():
 
     assert response.status_code == 200
     body = response.json()
-    assert body["row_count"] == 1200
+    assert body["row_count"] == 1000
     assert body["returned_row_count"] == 1000
     assert body["truncated"] is True
     assert body["byte_count"] <= 1_000_000
@@ -350,6 +359,7 @@ async def test_startup_warns_on_placeholder_tokens(caplog):
             llm_model=None,
             llm_api_key=None,
             llm_timeout_seconds=60.0,
+            cors_origins=["*"],
         )
     )
 
@@ -389,7 +399,10 @@ async def test_report_generation_and_ask_endpoints_work():
 @pytest.mark.asyncio
 async def test_report_streaming_uses_sse_when_llm_enabled(monkeypatch):
     await seed_sample_health_data()
-    monkeypatch.setattr(reports_router, "llm_is_configured", lambda: True)
+    async def fake_llm_is_configured() -> bool:
+        return True
+
+    monkeypatch.setattr(reports_router, "llm_is_configured", fake_llm_is_configured)
 
     async def fake_rewrite(prompt: str) -> str:
         return "LLM narrative"

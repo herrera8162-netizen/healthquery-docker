@@ -79,7 +79,7 @@ async def get_health_overview(days: int = 14) -> dict[str, object]:
 
 
 @mcp.tool
-async def get_daily_activity(start_date: date | str | None = None, end_date: date | str | None = None) -> dict[str, object]:
+async def get_daily_activity(start_date: str | None = None, end_date: str | None = None) -> dict[str, object]:
     """Return activity summaries for a date range."""
     client = _new_client()
     result = await client.post_query(
@@ -97,7 +97,7 @@ async def get_daily_activity(start_date: date | str | None = None, end_date: dat
 
 
 @mcp.tool
-async def get_sleep_summary(start_date: date | str | None = None, end_date: date | str | None = None) -> dict[str, object]:
+async def get_sleep_summary(start_date: str | None = None, end_date: str | None = None) -> dict[str, object]:
     """Return sleep sessions and stage rows for a date range."""
     client = _new_client()
     sessions = await client.post_query(
@@ -124,7 +124,7 @@ async def get_sleep_summary(start_date: date | str | None = None, end_date: date
 
 
 @mcp.tool
-async def get_vitals_summary(start_date: date | str | None = None, end_date: date | str | None = None) -> dict[str, object]:
+async def get_vitals_summary(start_date: str | None = None, end_date: str | None = None) -> dict[str, object]:
     """Return vitals point metrics for a date range."""
     client = _new_client()
     result = await client.post_query(
@@ -146,7 +146,7 @@ async def get_vitals_summary(start_date: date | str | None = None, end_date: dat
 
 
 @mcp.tool
-async def get_body_summary(start_date: date | str | None = None, end_date: date | str | None = None) -> dict[str, object]:
+async def get_body_summary(start_date: str | None = None, end_date: str | None = None) -> dict[str, object]:
     """Return body metrics for a date range."""
     client = _new_client()
     result = await client.post_query(
@@ -172,7 +172,7 @@ async def get_health_timeline(days: int = 14) -> dict[str, object]:
 
 
 @mcp.tool
-async def generate_doctor_visit_report(start_date: date | str | None = None, end_date: date | str | None = None) -> dict[str, object]:
+async def generate_doctor_visit_report(start_date: str | None = None, end_date: str | None = None) -> dict[str, object]:
     """Return the deterministic doctor-visit report."""
     client = _new_client()
     return await client.generate_doctor_visit_report(
@@ -185,8 +185,8 @@ async def generate_doctor_visit_report(start_date: date | str | None = None, end
 @mcp.tool
 async def ask_health_question(
     question: str,
-    start_date: date | str | None = None,
-    end_date: date | str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> dict[str, object]:
     """Ask the backend LLM-backed health assistant a question."""
     client = _new_client()

@@ -59,6 +59,21 @@ docker compose up -d
 
 The dashboard is now running on port `3135`.
 
+### Single-container alternative
+
+For a simpler installation, the API can serve the built dashboard itself. This
+keeps the existing two-container Compose setup as the default while providing a
+single image and port for small self-hosted deployments:
+
+```bash
+cp docker-compose.single.example.yml docker-compose.single.yml
+# Set real tokens in docker-compose.single.yml, then:
+docker compose -f docker-compose.single.yml up -d
+```
+
+It also listens on port `3135`; configure the companion webhook as
+`https://your-server/api/webhook/health` as usual.
+
 ### 4. Set up a reverse proxy (recommended)
 
 Point nginx, Caddy, or Traefik at `http://localhost:3135`. The frontend handles routing; all API calls go through `/api/`.
@@ -185,7 +200,7 @@ The frontend build also takes two build args:
 | Arg | Default | Description |
 |-----|---------|-------------|
 | `VITE_API_BASE_URL` | `/api` | API base path (change if not using the built-in nginx proxy) |
-| `VITE_READ_TOKEN` | — | Read token baked into the frontend build |
+| `VITE_READ_TOKEN` | `read-token` | Development-only frontend token; never pass a production token at build time because Vite embeds it in public JavaScript |
 
 ---
 
