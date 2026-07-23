@@ -4,10 +4,6 @@ A self-hosted personal health dashboard. Your phone syncs health data from Andro
 
 No cloud services required. Data stays on your own hardware.
 
-![HealthQuery overview](frontend/screenshot-overview.png)
-
-![HealthQuery vitals](frontend/screenshot-vitals.png)
-
 ---
 
 ## How it works
