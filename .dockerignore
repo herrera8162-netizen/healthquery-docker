@@ -9,11 +9,10 @@ logs/
 private/
 scratch/
 temp/
-local_sidecar/
-local_sidecar_anomaly/
+health_*/
 .claude/
 .codex/
-.local tooling/
+.paper*/
 .agents/
 .agent/
 .aider*

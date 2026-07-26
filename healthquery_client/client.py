@@ -2,8 +2,8 @@
 
 The clients are thin wrappers around :mod:`httpx`. They centralise auth
 header construction, base URL resolution, error mapping, retry, and
-the endpoint-to-method mapping so individual callers (trusted integration,
-reporters, MCP server, tests) can stay small.
+the endpoint-to-method mapping so individual callers (reporters, the MCP
+server, and tests) can stay small.
 
 Design notes
 ------------

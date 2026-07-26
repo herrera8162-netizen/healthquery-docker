@@ -2,9 +2,9 @@
 
 Read-only Python client library for the HealthQuery backend.
 
-The package is the canonical way for trusted internal agents (notably the
-**trusted integration**) to query the local HealthQuery service without holding
-ingest credentials or hand-rolling HTTP calls.
+The package is the canonical way for trusted integrations to query the local
+HealthQuery service without holding ingest credentials or hand-rolling HTTP
+calls.
 
 ## What it covers
 

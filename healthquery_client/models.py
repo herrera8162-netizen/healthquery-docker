@@ -1,8 +1,8 @@
 """Typed response models for the HealthQuery read API.
 
 The HealthQuery backend exposes a stable but evolving JSON contract. These
-models give callers (especially the trusted integration) explicit, validated
-shapes for the endpoints they consume most often, without forcing the
+models give callers explicit, validated shapes for the endpoints they consume
+most often, without forcing the
 client to construct one model per endpoint.
 
 The models are deliberately permissive on optional fields — HealthQuery

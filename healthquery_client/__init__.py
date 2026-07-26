@@ -1,8 +1,8 @@
 """Reusable Python client library for the HealthQuery read API.
 
-The trusted integration (and other trusted internal agents) call into this package
-instead of hand-rolling HTTP calls. The library targets the read-only surface
-of the HealthQuery backend, so it never holds or accepts the ingest token.
+Trusted integrations call into this package instead of hand-rolling HTTP
+calls. The library targets the read-only surface of the HealthQuery backend,
+so it never holds or accepts the ingest token.
 
 The package is intentionally narrow:
 

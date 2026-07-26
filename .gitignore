@@ -46,7 +46,7 @@ Thumbs.db
 .nosync
 .claude/
 .codex/
-.local tooling/
+.paper*/
 .agents/
 .agent/
 .aider*
@@ -68,8 +68,7 @@ CODEX.md
 GEMINI.md
 HANDOFF.md
 MEMORY.md
-*.local tooling
+*.paper*
 
-# local tooling-side consumers; retained locally until moved to their own project.
-local_sidecar/
-local_sidecar_anomaly/
+# Local sidecar applications; retained outside the public product.
+health_*/
