@@ -7,6 +7,7 @@ from fastapi import Header, HTTPException, status
 from fastapi import Request
 
 from app_settings import get_settings
+from services.browser_auth import session_is_valid
 
 
 def _extract_token(header_value: str) -> str:
@@ -54,6 +55,8 @@ async def require_ingest_auth(
     )
 
 
-async def require_read_auth(authorization: str = Header(default="")) -> None:
+async def require_read_auth(request: Request, authorization: str = Header(default="")) -> None:
+    if await session_is_valid(request):
+        return
     settings = get_settings()
     _require_token(_extract_token(authorization), settings.read_token, "read")

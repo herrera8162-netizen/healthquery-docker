@@ -9,6 +9,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app_settings import get_settings, has_placeholder_ingest_token, has_placeholder_read_token
 from db.database import init_db
+from routers.browser_auth import router as browser_auth_router
 from routers.health import router as health_router
 from routers.reports import router as reports_router
 from routers.read_api import router as read_router
@@ -25,6 +26,9 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     warn_on_placeholder_tokens(settings)
     await init_db()
+    from services.browser_auth import ensure_browser_auth_state
+
+    await ensure_browser_auth_state()
     yield
     logger.info("Stopping HealthQuery backend")
 
@@ -34,12 +38,13 @@ app = FastAPI(title="HealthQuery API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_settings().cors_origins,
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(health_router)
+app.include_router(browser_auth_router)
 app.include_router(read_router)
 app.include_router(reports_router)
 app.include_router(webhook_router)

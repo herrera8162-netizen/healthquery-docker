@@ -10,10 +10,6 @@ RUN npm ci
 COPY frontend/ ./
 ARG VITE_API_BASE_URL=/api
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-# The dashboard needs its scoped read token to call the authenticated API.
-# It is intentionally supplied only by local deployment configuration.
-ARG VITE_READ_TOKEN=read-token
-ENV VITE_READ_TOKEN=$VITE_READ_TOKEN
 RUN npm run build
 
 FROM python:3.11-slim AS runtime

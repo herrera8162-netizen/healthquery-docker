@@ -16,12 +16,13 @@ jobs:
       - name: Validate deployment manifests
         run: docker compose -f docker-compose.example.yml config
       - name: Build the single-container image
-        run: docker build --build-arg VITE_READ_TOKEN=ci-read-token --tag healthquery:ci .
+        run: docker build --tag healthquery:ci .
       - name: Smoke test dashboard and API
         run: |
           docker run --detach --rm --name healthquery-ci --publish 8000:8000 \
             --env HEALTHQUERY_INGEST_TOKEN=ci-ingest-token \
             --env HEALTHQUERY_READ_TOKEN=ci-read-token \
+            --env HEALTHQUERY_AUTH_SETUP_TOKEN=ci-setup-token \
             healthquery:ci
           trap 'docker stop healthquery-ci' EXIT
           for attempt in $(seq 1 20); do

@@ -5,7 +5,6 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_BASE_URL: /api
-        VITE_READ_TOKEN: change-me-read
     container_name: healthquery
     restart: unless-stopped
     ports:
@@ -16,6 +15,8 @@ services:
       DB_PATH: /app/data/healthquery.db
       HEALTHQUERY_INGEST_TOKEN: change-me-ingest
       HEALTHQUERY_READ_TOKEN: change-me-read
+      # One-time bootstrap secret for enrolling an authenticator app. Never expose it publicly.
+      HEALTHQUERY_AUTH_SETUP_TOKEN: change-me-auth-setup
       HEALTHQUERY_AUTH_HEADER: X-Webhook-Token
       HEALTHQUERY_LOG_LEVEL: INFO
       # Optional LLM — any OpenAI-compatible endpoint. Leave blank to disable Ask tab.

@@ -42,14 +42,15 @@ cd healthquery
 cp docker-compose.example.yml docker-compose.yml
 ```
 
-Open `docker-compose.yml` and set two tokens. Generate them however you like — a password manager, `openssl rand -base64 32`, or any random string:
+Open `docker-compose.yml` and set three secrets. Generate them with a password manager or `openssl rand -base64 32`:
 
 ```yaml
-HEALTHQUERY_INGEST_TOKEN: your-ingest-token-here   # the companion app uses this
-HEALTHQUERY_READ_TOKEN:   your-read-token-here      # the dashboard uses this
+HEALTHQUERY_INGEST_TOKEN:     your-ingest-token-here       # the companion app uses this
+HEALTHQUERY_READ_TOKEN:       your-machine-read-token-here # MCP and Agent Core use this
+HEALTHQUERY_AUTH_SETUP_TOKEN: your-one-time-setup-token    # enrolls the browser authenticator
 ```
 
-Keep these separate. The ingest token only permits writing health data. The read token only permits reading it.
+Keep these separate. The ingest token only permits writing health data. The read token is for trusted machine clients only. The setup token is used once to enroll an authenticator app for browser access.
 
 ### 3. Start HealthQuery
 
@@ -66,7 +67,15 @@ Point nginx, Caddy, or Traefik at `http://localhost:3135`. The frontend handles 
 
 If you expose the server to the internet, use HTTPS.
 
-### 5. Configure the companion app
+### 5. Enroll browser access
+
+Open the dashboard, enter `HEALTHQUERY_AUTH_SETUP_TOKEN`, scan the displayed QR
+code with an authenticator app, and confirm with its six-digit code. The setup
+endpoint closes permanently after enrollment. Future browser visits use an
+`HttpOnly` session cookie; the machine read token is never shipped to the
+browser.
+
+### 6. Configure the companion app
 
 See [Data source](#data-source) below for how to point the app at your webhook URL and set the ingest token.
 
@@ -171,7 +180,8 @@ All variables go in `docker-compose.yml` under `healthquery` → `environment`.
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `HEALTHQUERY_INGEST_TOKEN` | Yes | — | Token the companion app sends with each sync |
-| `HEALTHQUERY_READ_TOKEN` | Yes | — | Token the dashboard uses to read data |
+| `HEALTHQUERY_READ_TOKEN` | Yes | — | Bearer token for trusted machine clients such as MCP and Agent Core |
+| `HEALTHQUERY_AUTH_SETUP_TOKEN` | Yes, before first browser setup | — | One-time bootstrap token for authenticator enrollment; keep private |
 | `HEALTHQUERY_AUTH_HEADER` | No | `X-Webhook-Token` | Header the companion app sends the ingest token in |
 | `HEALTHQUERY_LOG_LEVEL` | No | `INFO` | Log verbosity (`DEBUG`, `INFO`, `WARNING`) |
 | `HEALTHQUERY_LLM_BASE_URL` | No | — | OpenAI-compatible API base URL |
@@ -181,12 +191,11 @@ All variables go in `docker-compose.yml` under `healthquery` → `environment`.
 | `HEALTHQUERY_CORS_ORIGINS` | No | `*` | Comma-separated allowed CORS origins (e.g. `https://health.example.com`) |
 | `DB_PATH` | No | `/app/data/healthquery.db` | SQLite database path inside the container |
 
-The frontend build takes two build args:
+The frontend build takes one build arg:
 
 | Arg | Default | Description |
 |-----|---------|-------------|
 | `VITE_API_BASE_URL` | `/api` | API base path (normally leave unchanged) |
-| `VITE_READ_TOKEN` | `read-token` | Read token used by the dashboard. It is visible to anyone who can load the dashboard, so deploy behind a private network or authenticated reverse proxy. |
 
 ---
 
@@ -204,7 +213,7 @@ The frontend build takes two build args:
 
 All data is stored in a single SQLite file on your server. Nothing is sent to external services unless you configure an LLM endpoint.
 
-The ingest and read tokens are separate by design. A compromised read token can't write data. A compromised ingest token can't read it.
+The ingest and machine read tokens are separate by design. Browser reads use a TOTP-authenticated, `HttpOnly` session cookie; the machine read token is never included in frontend assets. A compromised read token can't write data. A compromised ingest token can't read it.
 
 The free-form SQL query endpoint (`POST /api/health/query`) runs queries through an AST whitelist that only permits single `SELECT` statements — no mutations, no `ATTACH`, no multi-statement execution.
 
@@ -226,7 +235,7 @@ DB_PATH=./dev.db HEALTHQUERY_INGEST_TOKEN=dev HEALTHQUERY_READ_TOKEN=dev uvicorn
 ```bash
 cd frontend
 npm install
-VITE_API_BASE_URL=http://localhost:8000/api VITE_READ_TOKEN=dev npm run dev
+VITE_API_BASE_URL=http://localhost:8000/api npm run dev
 ```
 
 ### Tests

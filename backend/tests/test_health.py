@@ -4,8 +4,9 @@ import json
 from pathlib import Path
 
 import httpx
+import pyotp
 import pytest
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from httpx import ASGITransport
 import routers.reports as reports_router
 
@@ -116,13 +117,41 @@ async def test_ingest_and_read_auth_separate_tokens(monkeypatch):
     monkeypatch.setenv("HEALTHQUERY_READ_TOKEN", "read-token")
 
     await require_ingest_auth(authorization="Bearer ingest-token", request=None)  # type: ignore[arg-type]
-    await require_read_auth(authorization="Bearer read-token")
+    request = Request({"type": "http", "headers": []})
+    await require_read_auth(request=request, authorization="Bearer read-token")
 
     with pytest.raises(HTTPException):
         await require_ingest_auth(authorization="Bearer read-token", request=None)  # type: ignore[arg-type]
 
     with pytest.raises(HTTPException):
-        await require_read_auth(authorization="Bearer ingest-token")
+        await require_read_auth(request=request, authorization="Bearer ingest-token")
+
+
+@pytest.mark.asyncio
+async def test_browser_totp_session_auth_keeps_machine_auth_separate():
+    await init_db()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        assert (await client.get("/api/auth/status")).json() == {"enrolled": False}
+        assert (await client.get("/api/auth/setup")).status_code == 401
+
+        setup = await client.get("/api/auth/setup", headers={"X-HealthQuery-Setup-Token": "setup-token"})
+        assert setup.status_code == 200
+        secret = setup.json()["secret"]
+        confirm = await client.post(
+            "/api/auth/setup/confirm",
+            headers={"X-HealthQuery-Setup-Token": "setup-token"},
+            json={"code": pyotp.TOTP(secret).now()},
+        )
+        assert confirm.status_code == 200
+
+        browser_read = await client.get("/api/health/status")
+        assert browser_read.status_code == 200
+        assert (await client.post("/api/auth/logout")).status_code == 200
+        assert (await client.get("/api/health/status")).status_code == 401
+
+        machine_read = await client.get("/api/health/status", headers={"Authorization": "Bearer read-token"})
+        assert machine_read.status_code == 200
 
 
 @pytest.mark.asyncio
@@ -352,9 +381,10 @@ async def test_startup_warns_on_placeholder_tokens(caplog):
     warn_on_placeholder_tokens(
         AppSettings(
             db_path=Path("data/healthquery.db"),
-            ingest_token="change-me-ingest",
-            read_token="change-me-read",
-            log_level="INFO",
+                ingest_token="change-me-ingest",
+                read_token="change-me-read",
+                auth_setup_token="setup-token",
+                log_level="INFO",
             llm_base_url=None,
             llm_model=None,
             llm_api_key=None,

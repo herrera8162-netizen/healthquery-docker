@@ -16,6 +16,7 @@ import {
   Upload,
 } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { AuthGate } from "./AuthGate";
 
 type TimelineEvent = {
   event_id: string;
@@ -102,7 +103,6 @@ type DashboardState = {
 };
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "/api";
-const READ_TOKEN = import.meta.env.VITE_READ_TOKEN ?? "read-token";
 
 function asNumber(value: unknown) {
   const result = Number(value ?? 0);
@@ -178,10 +178,8 @@ function defaultRange(endDate: string | undefined, windowDays: number) {
 async function apiPost(path: string, body: unknown) {
   const response = await fetch(`${API_BASE}${path}`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${READ_TOKEN}`,
-      "Content-Type": "application/json",
-    },
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!response.ok) {
@@ -193,10 +191,8 @@ async function apiPost(path: string, body: unknown) {
 async function apiPut(path: string, body: unknown) {
   const response = await fetch(`${API_BASE}${path}`, {
     method: "PUT",
-    headers: {
-      Authorization: `Bearer ${READ_TOKEN}`,
-      "Content-Type": "application/json",
-    },
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!response.ok) {
@@ -435,11 +431,7 @@ function _buildFixtureDashboard(): Omit<DashboardState, "loading"> {
 const FIXTURE_DASHBOARD = _buildFixtureDashboard();
 
 async function apiGet(path: string) {
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      Authorization: `Bearer ${READ_TOKEN}`,
-    },
-  });
+  const response = await fetch(`${API_BASE}${path}`, { credentials: "same-origin" });
   if (!response.ok) {
     throw new Error(`GET ${path} failed: ${response.status}`);
   }
@@ -1549,4 +1541,6 @@ HEALTHQUERY_LLM_API_KEY=`}
   );
 }
 
-export default App;
+export default function ProtectedApp() {
+  return <AuthGate><App /></AuthGate>;
+}
