@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import hmac
-
 import pyotp
-from fastapi import APIRouter, Header, HTTPException, Request, Response, status
+from fastapi import APIRouter, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field
 
-from app_settings import get_settings
 from services.browser_auth import (
     clear_session_cookie,
     enroll_browser_auth,
@@ -22,17 +19,6 @@ class TotpCodeRequest(BaseModel):
     code: str = Field(..., pattern=r"^\d{6}$")
 
 
-def _require_setup_token(provided: str) -> None:
-    expected = get_settings().auth_setup_token
-    if not expected:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Browser auth setup is not configured",
-        )
-    if not hmac.compare_digest(provided, expected):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid setup token")
-
-
 @router.get("/status")
 async def auth_status() -> dict[str, bool]:
     state = await ensure_browser_auth_state()
@@ -45,8 +31,7 @@ async def auth_me(request: Request) -> dict[str, bool]:
 
 
 @router.get("/setup")
-async def auth_setup(x_healthquery_setup_token: str = Header(default="")) -> dict[str, str]:
-    _require_setup_token(x_healthquery_setup_token)
+async def auth_setup() -> dict[str, str]:
     state = await ensure_browser_auth_state()
     if state.enrolled:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Already enrolled")
@@ -59,9 +44,7 @@ async def confirm_auth_setup(
     body: TotpCodeRequest,
     request: Request,
     response: Response,
-    x_healthquery_setup_token: str = Header(default=""),
 ) -> dict[str, bool]:
-    _require_setup_token(x_healthquery_setup_token)
     state = await ensure_browser_auth_state()
     if state.enrolled:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Already enrolled")

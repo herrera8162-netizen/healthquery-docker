@@ -10,7 +10,6 @@ class AppSettings:
     db_path: Path
     ingest_token: str
     read_token: str
-    auth_setup_token: str
     log_level: str
     llm_base_url: str | None
     llm_model: str | None
@@ -27,7 +26,6 @@ def get_settings() -> AppSettings:
     db_path = Path(os.getenv("DB_PATH", "data/healthquery.db"))
     ingest_token = os.getenv("HEALTHQUERY_INGEST_TOKEN", "change-me-ingest")
     read_token = os.getenv("HEALTHQUERY_READ_TOKEN", "change-me-read")
-    auth_setup_token = os.getenv("HEALTHQUERY_AUTH_SETUP_TOKEN", "").strip()
     log_level = os.getenv("HEALTHQUERY_LOG_LEVEL", "INFO")
     llm_base_url = os.getenv("HEALTHQUERY_LLM_BASE_URL", "").strip() or None
     llm_model = os.getenv("HEALTHQUERY_LLM_MODEL", "").strip() or None
@@ -39,7 +37,6 @@ def get_settings() -> AppSettings:
         db_path=db_path,
         ingest_token=ingest_token,
         read_token=read_token,
-        auth_setup_token=auth_setup_token,
         log_level=log_level,
         llm_base_url=llm_base_url,
         llm_model=llm_model,

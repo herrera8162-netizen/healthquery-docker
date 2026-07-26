@@ -42,15 +42,14 @@ cd healthquery
 cp docker-compose.example.yml docker-compose.yml
 ```
 
-Open `docker-compose.yml` and set three secrets. Generate them with a password manager or `openssl rand -base64 32`:
+Open `docker-compose.yml` and set two secrets. Generate them with a password manager or `openssl rand -base64 32`:
 
 ```yaml
 HEALTHQUERY_INGEST_TOKEN:     your-ingest-token-here       # the companion app uses this
 HEALTHQUERY_READ_TOKEN:       your-machine-read-token-here # MCP and Agent Core use this
-HEALTHQUERY_AUTH_SETUP_TOKEN: your-one-time-setup-token    # enrolls the browser authenticator
 ```
 
-Keep these separate. The ingest token only permits writing health data. The read token is for trusted machine clients only. The setup token is used once to enroll an authenticator app for browser access.
+Keep these separate. The ingest token only permits writing health data. The read token is for trusted machine clients only.
 
 ### 3. Start HealthQuery
 
@@ -69,8 +68,8 @@ If you expose the server to the internet, use HTTPS.
 
 ### 5. Enroll browser access
 
-Open the dashboard, enter `HEALTHQUERY_AUTH_SETUP_TOKEN`, scan the displayed QR
-code with an authenticator app, and confirm with its six-digit code. The setup
+Open the dashboard, scan the displayed QR code with an authenticator app, and
+confirm with its six-digit code. The setup
 endpoint closes permanently after enrollment. Future browser visits use an
 `HttpOnly` session cookie; the machine read token is never shipped to the
 browser.
@@ -181,7 +180,6 @@ All variables go in `docker-compose.yml` under `healthquery` → `environment`.
 |----------|----------|---------|-------------|
 | `HEALTHQUERY_INGEST_TOKEN` | Yes | — | Token the companion app sends with each sync |
 | `HEALTHQUERY_READ_TOKEN` | Yes | — | Bearer token for trusted machine clients such as MCP and Agent Core |
-| `HEALTHQUERY_AUTH_SETUP_TOKEN` | Yes, before first browser setup | — | One-time bootstrap token for authenticator enrollment; keep private |
 | `HEALTHQUERY_AUTH_HEADER` | No | `X-Webhook-Token` | Header the companion app sends the ingest token in |
 | `HEALTHQUERY_LOG_LEVEL` | No | `INFO` | Log verbosity (`DEBUG`, `INFO`, `WARNING`) |
 | `HEALTHQUERY_LLM_BASE_URL` | No | — | OpenAI-compatible API base URL |

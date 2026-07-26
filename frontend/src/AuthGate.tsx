@@ -20,20 +20,14 @@ function CodeInput({ value, onChange, onSubmit, disabled }: { value: string; onC
 }
 
 function SetupScreen({ onComplete }: { onComplete: () => void }) {
-  const [setupToken, setSetupToken] = useState("");
   const [setup, setSetup] = useState<AuthSetup | null>(null);
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const beginSetup = useCallback(async () => {
-    setError("");
-    try {
-      setSetup(await authFetch<AuthSetup>("/setup", { headers: { "X-HealthQuery-Setup-Token": setupToken } }));
-    } catch {
-      setError("The setup token was not accepted.");
-    }
-  }, [setupToken]);
+  useEffect(() => {
+    authFetch<AuthSetup>("/setup").then(setSetup).catch(() => setError("Unable to load authenticator setup."));
+  }, []);
 
   const confirm = useCallback(async () => {
     if (code.length !== 6) return;
@@ -42,7 +36,7 @@ function SetupScreen({ onComplete }: { onComplete: () => void }) {
     try {
       await authFetch("/setup/confirm", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-HealthQuery-Setup-Token": setupToken },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),
       });
       onComplete();
@@ -52,12 +46,11 @@ function SetupScreen({ onComplete }: { onComplete: () => void }) {
     } finally {
       setSubmitting(false);
     }
-  }, [code, onComplete, setupToken]);
+  }, [code, onComplete]);
 
   return <div className="flex h-screen items-center justify-center bg-background p-4"><div className="w-full max-w-sm space-y-5">
-    <div className="space-y-1 text-center"><ShieldCheck className="mx-auto h-8 w-8 text-primary" /><h1 className="text-lg font-semibold">Set up HealthQuery login</h1><p className="text-xs text-muted-foreground">Use the one-time setup token, then enroll an authenticator app.</p></div>
-    {!setup ? <><input type="password" value={setupToken} onChange={(event) => setSetupToken(event.target.value)} placeholder="One-time setup token" className="w-full rounded-md border border-border bg-secondary px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring" />
-      <button onClick={beginSetup} disabled={!setupToken} className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-40">Start setup</button></> : <>
+    <div className="space-y-1 text-center"><ShieldCheck className="mx-auto h-8 w-8 text-primary" /><h1 className="text-lg font-semibold">Set up HealthQuery login</h1><p className="text-xs text-muted-foreground">Scan this once with your authenticator app.</p></div>
+    {!setup ? <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div> : <>
       <div className="flex justify-center rounded-lg bg-white p-4"><QRCodeSVG value={setup.otpauth_uri} size={200} /></div>
       <div className="flex items-center gap-2"><code className="flex-1 truncate rounded border border-border bg-secondary px-2 py-1.5 font-mono text-[10px]">{setup.secret}</code><button onClick={() => navigator.clipboard?.writeText(setup.secret)} className="p-1.5 text-muted-foreground" title="Copy manual entry key"><Copy className="h-3.5 w-3.5" /></button></div>
       <CodeInput value={code} onChange={setCode} onSubmit={confirm} disabled={submitting} />

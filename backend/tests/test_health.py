@@ -133,14 +133,11 @@ async def test_browser_totp_session_auth_keeps_machine_auth_separate():
     transport = ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         assert (await client.get("/api/auth/status")).json() == {"enrolled": False}
-        assert (await client.get("/api/auth/setup")).status_code == 401
-
-        setup = await client.get("/api/auth/setup", headers={"X-HealthQuery-Setup-Token": "setup-token"})
+        setup = await client.get("/api/auth/setup")
         assert setup.status_code == 200
         secret = setup.json()["secret"]
         confirm = await client.post(
             "/api/auth/setup/confirm",
-            headers={"X-HealthQuery-Setup-Token": "setup-token"},
             json={"code": pyotp.TOTP(secret).now()},
         )
         assert confirm.status_code == 200
@@ -383,7 +380,6 @@ async def test_startup_warns_on_placeholder_tokens(caplog):
             db_path=Path("data/healthquery.db"),
                 ingest_token="change-me-ingest",
                 read_token="change-me-read",
-                auth_setup_token="setup-token",
                 log_level="INFO",
             llm_base_url=None,
             llm_model=None,

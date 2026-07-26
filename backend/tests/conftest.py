@@ -16,6 +16,5 @@ def isolated_healthquery_env(tmp_path, monkeypatch):
     monkeypatch.setenv("DB_PATH", str(tmp_path / "healthquery.db"))
     monkeypatch.setenv("HEALTHQUERY_INGEST_TOKEN", "ingest-token")
     monkeypatch.setenv("HEALTHQUERY_READ_TOKEN", "read-token")
-    monkeypatch.setenv("HEALTHQUERY_AUTH_SETUP_TOKEN", "setup-token")
     monkeypatch.setenv("HEALTHQUERY_LOG_LEVEL", "INFO")
     monkeypatch.setenv("HEALTHQUERY_AUTH_HEADER", "X-Webhook-Token")
