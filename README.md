@@ -4,11 +4,21 @@ A self-hosted personal health dashboard. Your phone syncs health data from Andro
 
 No cloud services required. Data stays on your own hardware.
 
+> [!NOTE]
+> **Fork Information**: This repository is a lightweight fork of **[nikira-studio/healthquery](https://github.com/nikira-studio/healthquery)**. 
+> 
+> - **Upstream Alignment**: Upstream has natively integrated single-container Docker support into its core code. This fork tracks upstream `main` 1-to-1 without intrusive application code modifications.
+> - **Pre-built GHCR Images**: This fork provides an automated GitHub Actions workflow ([`.github/workflows/docker-build.yml`](.github/workflows/docker-build.yml)) to build and publish multi-arch single-container images directly to GitHub Container Registry:
+>   ```bash
+>   docker pull ghcr.io/herrera8162-netizen/healthquery-docker:latest
+>   ```
+
 ![HealthQuery overview](frontend/screenshot-overview.png)
 
 ![HealthQuery vitals](frontend/screenshot-vitals.png)
 
 ---
+
 
 ## How it works
 
